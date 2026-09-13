@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Календарь недели — 14-18 сентября 2026</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #2a2e38;
+    --text: #e8e8e6;
+    --text-sec: #9a9a94;
+    --gold: #f2c97a;
+    --red: #ef9999;
+    --amber: #f2c97a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--text-sec); font-size: 14px; margin-bottom: 20px; }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  button {
+    background: #1a2230; color: var(--gold); border: 1px solid #33425c;
+    border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+  }
+  button:hover { background: #22304a; }
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 13px; }
+  th {
+    background: #1b1f28; color: var(--text-sec); text-align: left;
+    padding: 10px 8px; font-weight: 600; position: sticky; top: 0;
+  }
+  td { padding: 8px; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #1b1f28; }
+  tr.important td { background: #3a1414 !important; }
+  tr.high td { background: #3a2c10 !important; }
+  .editable { min-height: 20px; outline: none; border-radius: 4px; padding: 2px 4px; }
+  .editable:focus { background: #22304a; box-shadow: 0 0 0 1px #33425c; }
+  .editable:empty:before { content: attr(data-placeholder); color: #55585f; font-style: italic; }
+  .col-date { color: var(--gold); font-weight: 600; white-space: nowrap; }
+  .col-time { color: var(--text-sec); white-space: nowrap; }
+  .col-asset { font-weight: 600; }
+  .footer-note { margin-top: 18px; font-size: 12px; color: var(--text-sec); font-style: italic; }
+  textarea#exportArea {
+    width: 100%; height: 200px; margin-top: 12px; background: #1b1f28; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+    font-family: monospace; font-size: 12px; display: none;
+  }
+
+  .widget-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 24px;
+  }
+  .widget-section h2 { font-size: 15px; margin: 0 0 12px 0; color: var(--text); }
+  .tradingview-widget-container { border-radius: 8px; overflow: hidden; }
+  .widget-legend {
+    background: #1b1f28; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 12px; font-size: 12.5px; color: var(--text-sec);
+    display: grid; gap: 6px;
+  }
+  .legend-item b { color: var(--text); }
+  .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot-time { background: #7fb1e8; }
+  .dot-event { background: #b2a4ec; }
+  .dot-actual { background: #f2c97a; }
+  .dot-forecast { background: #8fcf8f; }
+  .dot-previous { background: #9a9a94; }
+
+  .cot-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 24px;
+  }
+  .cot-section h2 { font-size: 17px; margin: 0 0 6px 0; }
+  .cot-section .cot-subtitle { font-size: 12.5px; color: var(--text-sec); margin-bottom: 14px; }
+  .cot-section h3 { font-size: 14px; color: var(--text-sec); margin: 18px 0 10px 0; }
+  .cot-explainer {
+    background: #1b1f28; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-size: 12px; color: var(--text-sec); margin-bottom: 16px; line-height: 1.6;
+  }
+  .cot-explainer b { color: var(--gold); }
+  .cot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .cot-card { background: #1b1f28; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .cot-card-title { font-size: 12px; color: var(--text-sec); margin-bottom: 8px; font-weight: 600; }
+  .cot-tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; }
+  .cot-tag.long { background: #15301c; color: #8fcf8f; border: 1px solid #2f6b3f; }
+  .cot-tag.short { background: #3a1414; color: #ef9999; border: 1px solid #7a2a2a; }
+
+  .pairs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+  .pair-box {
+    border-radius: 8px; padding: 8px 10px; font-size: 12.5px; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pair-box span { font-weight: 700; }
+  .pair-box.strong { background: #15301c; color: #8fcf8f; border: 1px solid #2f6b3f; }
+  .pair-box.weak { background: #3a1414; color: #ef9999; border: 1px solid #7a2a2a; }
+
+  .forecast-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+  .forecast-table th { background: #1b1f28; color: var(--text-sec); text-align: left; padding: 8px; position: static; }
+  .forecast-table td { padding: 8px; border-top: 1px solid var(--border); }
+  .pf-name { font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .pf-long { color: #8fcf8f; font-weight: 700; }
+  .pf-short { color: #ef9999; font-weight: 700; }
+  .pf-warn { color: #f2c97a; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Календарь недели · 14-18 сентября 2026</h1>
+<div class="subtitle">Главная неделя месяца: ФРС (ср) → BoE (чт) → BoJ (пт). Заполняй «Факт» и «Заметку» прямо здесь. Время по Валенсии.</div>
+
+<div class="widget-section">
+  <h2>🔴 Живой календарь (TradingView) — сверяй актуальные факты здесь</h2>
+  <div class="widget-legend">
+    <div class="legend-item"><span class="legend-dot dot-time"></span><b>Время</b> — когда выходит релиз (часовой пояс браузера, сверяй с Валенсией)</div>
+    <div class="legend-item"><span class="legend-dot dot-event"></span><b>Событие</b> — название новости</div>
+    <div class="legend-item"><span class="legend-dot dot-actual"></span><b>Actual (Фактический)</b> — ФАКТ, появляется в момент публикации</div>
+    <div class="legend-item"><span class="legend-dot dot-forecast"></span><b>Forecast (Прогноз)</b> — ОЖИДАНИЕ рынка до выхода</div>
+    <div class="legend-item"><span class="legend-dot dot-previous"></span><b>Previous (Предыдущее)</b> — значение за прошлый период</div>
+  </div>
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+  </div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+  {
+  "colorTheme": "dark",
+  "isTransparent": false,
+  "width": "100%",
+  "height": "500",
+  "locale": "ru",
+  "importanceFilter": "-1,0,1",
+  "countryFilter": "us,eu,gb,jp,au,ca,nz,cn,ch"
+  }
+  </script>
+</div>
+
+<div class="cot-section">
+  <h2>📊 COT (Leveraged Funds)</h2>
+  <div class="cot-subtitle">Неделя 8 сентября, валидна с 14 сентября</div>
+
+  <div class="cot-explainer">
+    <b>Как читать:</b> <b>Net % LF</b> — позиционирование спекулятивных фондов (лонг/шорт) в % от открытого интереса — главный индикатор настроя "умных денег".
+    <b>Δ (изменение за неделю)</b> — куда движется позиция. Резкая Δ важнее самого уровня: если актив в шорте, но Δ сильно положительная — шорты закрываются, тренд может разворачиваться, даже если абсолютный уровень ещё отрицательный.
+  </div>
+
+  <div class="cot-grid">
+    <div class="cot-card">
+      <div class="cot-card-title">🔥 Главный сигнал недели</div>
+      <div class="cot-tag long">USD: +25,26% (LF) — впервые лонг!</div>
+      <div class="cot-tag long">JPY: Δ +23,52% — шорты закрываются</div>
+    </div>
+    <div class="cot-card">
+      <div class="cot-card-title">Лонг у фондов</div>
+      <div class="cot-tag long">GBP +33,28%</div>
+      <div class="cot-tag long">AUD +39,45%</div>
+      <div class="cot-tag long">USD +25,26%</div>
+    </div>
+    <div class="cot-card">
+      <div class="cot-card-title">Шорт у фондов</div>
+      <div class="cot-tag short">EUR -14,93%</div>
+      <div class="cot-tag short">CAD -48,93%</div>
+      <div class="cot-tag short">NZD -42,80%</div>
+      <div class="cot-tag short">CHF -42,39%</div>
+      <div class="cot-tag short">JPY -23,09%</div>
+    </div>
+    <div class="cot-card">
+      <div class="cot-card-title">Индексы США</div>
+      <div class="cot-tag short">S&amp;P500 −52,31%</div>
+      <div class="cot-tag short">Nasdaq −25,05%</div>
+      <div class="cot-tag short">US30 −17,69%</div>
+    </div>
+  </div>
+
+  <h3>🏆 Сильные пары (LF Strength Index)</h3>
+  <div class="pairs-grid">
+    <div class="pair-box strong">AUD/CAD <span>44,20%</span></div>
+    <div class="pair-box strong">GBP/CAD <span>41,10%</span></div>
+    <div class="pair-box strong">AUD/NZD <span>41,10%</span></div>
+    <div class="pair-box strong">AUD/CHF <span>40,90%</span></div>
+    <div class="pair-box strong">GBP/NZD <span>37,80%</span></div>
+    <div class="pair-box strong">GBP/CHF <span>37,80%</span></div>
+    <div class="pair-box strong">USD/CAD <span>37,10%</span></div>
+    <div class="pair-box strong">USD/JPY <span>33,80%</span></div>
+    <div class="pair-box strong">AUD/JPY <span>31,30%</span></div>
+    <div class="pair-box strong">GBP/USD <span>28,20%</span></div>
+  </div>
+
+  <h3>⚠️ Слабые пары (шорт-уклон)</h3>
+  <div class="pairs-grid">
+    <div class="pair-box weak">NZD/USD <span>-34,00%</span></div>
+    <div class="pair-box weak">EUR/AUD <span>-27,20%</span></div>
+    <div class="pair-box weak">EUR/GBP <span>-24,10%</span></div>
+    <div class="pair-box weak">EUR/USD <span>-20,10%</span></div>
+    <div class="pair-box weak">CHF/JPY <span>-9,60%</span></div>
+    <div class="pair-box weak">NZD/JPY <span>-9,90%</span></div>
+    <div class="pair-box weak">CAD/JPY <span>-12,90%</span></div>
+  </div>
+
+  <h3>🎯 Наш прогноз (COT + фундаментал недели)</h3>
+  <table class="forecast-table">
+    <thead>
+      <tr><th>Актив/Пара</th><th>COT говорит</th><th>Фундаментал недели</th><th>Наш прогноз</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="pf-name">USD/CAD</td>
+        <td>Лонг 37,10% — впервые доллар в лонге у фондов</td>
+        <td>Горячий PPI/CPI + Canada CPI под давлением (пн)</td>
+        <td class="pf-long">ЛОНГ ⬆️⬆️</td>
+      </tr>
+      <tr>
+        <td class="pf-name">GBP/CAD, AUD/CAD</td>
+        <td>Лонг (41,1% / 44,2%)</td>
+        <td>CAD самая слабая валюта в шорте у фондов (-48,93%)</td>
+        <td class="pf-long">ЛОНГ ⬆️</td>
+      </tr>
+      <tr>
+        <td class="pf-name">AUD/NZD</td>
+        <td>Лонг 41,1%, но NZD шорты сокращаются (Δ +25,37%)</td>
+        <td>Обе валюты в развороте COT — сигнал слабее обычного</td>
+        <td class="pf-warn">ЛОНГ, но осторожно ⚠️</td>
+      </tr>
+      <tr>
+        <td class="pf-name">GBP/JPY, AUD/JPY</td>
+        <td>Лонг, но JPY активно выходит из шорта (Δ +23,52%)</td>
+        <td>⚠️ ФРС (ср) + BoJ (чт-пт) подряд — двойной риск</td>
+        <td class="pf-warn">ГЛАВНЫЙ РИСК НЕДЕЛИ ⚠️⚠️</td>
+      </tr>
+      <tr>
+        <td class="pf-name">EUR/USD</td>
+        <td>Шорт -20,10%</td>
+        <td>Schnabel (пн), слабый торг. баланс ЕС, доллар-лонг тема</td>
+        <td class="pf-short">ШОРТ ⬇️</td>
+      </tr>
+      <tr>
+        <td class="pf-name">Золото</td>
+        <td>—</td>
+        <td>Главная развилка — ФРС решение + dot plot (ср, 20:00)</td>
+        <td class="pf-warn">Ключевое событие среды определит месяц вперёд</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer-note" style="margin-top:10px;">
+    Главный сигнал недели: доллар впервые перешёл в чистый лонг у фондов (+25,26% LF) — прямое следствие горячих PPI/CPI прошлой недели. JPY активно выходит из шорта перед заседанием BoJ — следить за GBP/JPY и AUD/JPY.
+  </div>
+</div>
+
+<div class="toolbar">
+  <button onclick="exportText()">📋 Экспортировать как текст</button>
+  <button onclick="clearAll()">🗑 Очистить все заметки</button>
+  <button onclick="window.print()">🖨 Распечатать</button>
+</div>
+
+<textarea id="exportArea" readonly></textarea>
+
+<div class="table-wrap">
+<table id="newsTable">
+<thead>
+<tr>
+  <th>Дата</th><th>Время</th><th>Актив</th><th>Событие</th><th>Прогноз</th><th>Факт</th><th>Реакция / Заметка</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+  <td class="col-date">Пн 14.09</td><td class="col-time">11:15</td><td class="col-asset">EUR</td>
+  <td>Выступление Шнабель (ЕЦБ)</td><td>—</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr>
+  <td class="col-date">Пн 14.09</td><td class="col-time">14:30</td><td class="col-asset">CAD</td>
+  <td>Canada CPI (базовый/мес./год.)</td><td>годовой без изм., месячный -0,5%</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+
+<tr>
+  <td class="col-date">Вт 15.09</td><td class="col-time">08:00</td><td class="col-asset">GBP</td>
+  <td>UK Jobs Report (безработица, заявки, зарплаты)</td><td>безработица ⬆ незнач., заявки резкий рост</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr>
+  <td class="col-date">Вт 15.09</td><td class="col-time">09:00</td><td class="col-asset">EUR</td>
+  <td>Germany ZEW Economic Sentiment</td><td>выше текущего</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr>
+  <td class="col-date">Вт 15.09</td><td class="col-time">14:30</td><td class="col-asset">USD</td>
+  <td>ADP Employment</td><td>—</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+
+<tr class="high">
+  <td class="col-date">Ср 16.09</td><td class="col-time">14:00</td><td class="col-asset">USD</td>
+  <td>Retail Sales (за часы до ФРС!) ⭐⭐⭐⭐</td><td>рост по осн. группам</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr class="important">
+  <td class="col-date">Ср 16.09</td><td class="col-time">20:00</td><td class="col-asset">USD</td>
+  <td>ФРС: решение по ставке + SEP/dot plot ⭐⭐⭐⭐⭐ ГЛАВНОЕ</td><td>hold 3,50-3,75% vs хайк до 3,75-4,00%</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr class="important">
+  <td class="col-date">Ср 16.09</td><td class="col-time">20:30</td><td class="col-asset">USD</td>
+  <td>Пресс-конференция ФРС</td><td>—</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+
+<tr>
+  <td class="col-date">Чт 17.09</td><td class="col-time">11:00</td><td class="col-asset">EUR</td>
+  <td>EU финальный CPI</td><td>рост</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr class="important">
+  <td class="col-date">Чт 17.09</td><td class="col-time">13:00</td><td class="col-asset">GBP</td>
+  <td>Банк Англии: решение по ставке ⭐⭐⭐⭐⭐</td><td>hold, следить за голосами</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr class="high">
+  <td class="col-date">Чт 17.09</td><td class="col-time">14:30</td><td class="col-asset">USD</td>
+  <td>Jobless Claims + Philly Fed</td><td>рост заявок, снижение Philly</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr class="high">
+  <td class="col-date">Чт 17.09</td><td class="col-time">ночь</td><td class="col-asset">JPY</td>
+  <td>Банк Японии: начало заседания ⭐⭐⭐⭐</td><td>—</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+
+<tr class="important">
+  <td class="col-date">Пт 18.09</td><td class="col-time">утро</td><td class="col-asset">JPY</td>
+  <td>Банк Японии: решение ⭐⭐⭐⭐⭐</td><td>следить за тоном (тема ужесточения)</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+<tr>
+  <td class="col-date">Пт 18.09</td><td class="col-time">08:00</td><td class="col-asset">GBP</td>
+  <td>UK Retail Sales</td><td>давление на фунт сохраняется</td>
+  <td class="editable" contenteditable="true" data-placeholder="факт..."></td>
+  <td class="editable" contenteditable="true" data-placeholder="заметка..."></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<div class="footer-note">
+  Не является индивидуальной инвестиционной рекомендацией. Данные заносятся вручную — сохраняй страницу локально (Ctrl/Cmd+S) после заполнения.
+</div>
+
+<script>
+function exportText() {
+  const rows = document.querySelectorAll('#newsTable tbody tr');
+  let out = "ИТОГИ НЕДЕЛИ · 14-18 СЕНТЯБРЯ 2026\n\n";
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const date = cells[0].innerText.trim();
+    const time = cells[1].innerText.trim();
+    const asset = cells[2].innerText.trim();
+    const event = cells[3].innerText.trim();
+    const forecast = cells[4].innerText.trim();
+    const fact = cells[5].innerText.trim();
+    const note = cells[6].innerText.trim();
+    out += `${date} ${time} | ${asset} | ${event}\n`;
+    out += `  Прогноз: ${forecast}\n`;
+    if (fact) out += `  Факт: ${fact}\n`;
+    if (note) out += `  Заметка: ${note}\n`;
+    out += `\n`;
+  });
+  const area = document.getElementById('exportArea');
+  area.value = out;
+  area.style.display = 'block';
+  area.select();
+}
+function clearAll() {
+  if (!confirm('Очистить все введённые факты и заметки?')) return;
+  document.querySelectorAll('.editable').forEach(el => el.innerText = '');
+}
+</script>
+
+</body>
+</html>
